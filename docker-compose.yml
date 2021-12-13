@@ -1,0 +1,29 @@
+version: '3'
+services:
+  init:
+    image: busybox:latest
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      - "chown ${USER_ID}:${USER_ID} /home/${USERNAME};
+         test ! -d /home/${USERNAME}/.ssh && mkdir -p /home/${USERNAME}/.ssh;
+         echo ${SSHCredential} > /home/${USERNAME}/.ssh/authorized_keys;
+         chown -R ${USER_ID}:${USER_ID} /home/${USERNAME}/.ssh;"
+    volumes:
+      - ./homeDir/${USERNAME}:/home/${USERNAME}
+    restart: 'no'
+
+  docker-ubuntu:
+    image: docker-ubuntu
+    build:
+      context: ./
+      args:
+        USERNAME: ${USERNAME}
+        USER_ID: ${USER_ID}
+    container_name: docker-ubuntu
+    hostname: docker-ubuntu
+    volumes:
+      - ./homeDir/${USERNAME}:/home/${USERNAME}
+    ports:
+      - "1022:22"
+    depends_on:
+      - init
